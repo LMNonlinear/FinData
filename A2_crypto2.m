@@ -260,6 +260,10 @@ title('Plot of optimal model lag boundaries for prediction via linear methods')
 legend({'original data set','additional data set'},'Location','NorthWest')
 figure()
 plot(ax,lins)
+xlabel('maximum allowed lag boundary')
+ylabel('linear transfer entropy')
+title('Plot of linear transfer entropy between sets vs. maximum lag boundary')
+legend({'transfer entropy calculated using computed optimal lags'},'Location','NorthWest')
 
 figure()
 plot(ax,s_xs,'r',ax,s_ys,'g')
@@ -269,6 +273,10 @@ title('Plot of optimal model lag boundaries for prediction via quadratic methods
 legend({'original data set','additional data set'},'Location','NorthWest')
 figure()
 plot(ax,squares)
+xlabel('maximum allowed lag boundary')
+ylabel('squared-fit transfer entropy')
+title('Plot of squared-fit transfer entropy between sets vs. maximum lag boundary')
+legend({'transfer entropy calculated using computed optimal lags'},'Location','NorthWest')
 
 % Granger causality is linear only, and therefore less general and
 % informative than transfer entropy (although a comparsion could show how
