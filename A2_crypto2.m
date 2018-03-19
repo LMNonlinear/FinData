@@ -106,55 +106,85 @@ returns_all = [returns_bit,returns_eth,returns_rip,returns_nem,...
 
 % seems to work weirdly
 % dist = KLDiv(A,B);
+%% Plot all correlation measures vs. window size
 
-% Each entry is a 10x10 matrix
-lags = 5; % go up to 65 when ready
+max_wsize = 865;
+start_size = 5;
+ss1 = start_size - 1;
 
-rhos = zeros(lags,10,10);
-rho_ps = zeros(lags,10,10);
-spears = zeros(lags,10,10);
-spear_ps = zeros(lags,10,10);
-taus = zeros(lags,10,10);
-tau_ps = zeros(lags,10,10);
+rhos = zeros(max_wsize-ss1,10,10);
+rho_ps = zeros(max_wsize-ss1,10,10);
+spears = zeros(max_wsize-ss1,10,10);
+spear_ps = zeros(max_wsize-ss1,10,10);
+taus = zeros(max_wsize-ss1,10,10);
+tau_ps = zeros(max_wsize-ss1,10,10);
 
-for q = 1:lags
-    rhos_temp = zeros(865-q,10,10); %again checks structure
-    %spears_temp = zeros(865-q,10,10);
-    %taus_temp = zeros(865-q,10,10);
-    rho_t_ps = zeros(865-q,10,10);
-    %spear_t_ps = zeros(865-q,10,10);
-    %tau_t_ps = zeros(865-q,10,10);
-    for i = 1:(865-q)
-        data_temp = returns_all(i:i+q,:); %is this right length?
+for q = start_size:max_wsize
+    rhos_temp = zeros(865-q+1,10,10); %again checks structure
+    spears_temp = zeros(865-q+1,10,10);
+    taus_temp = zeros(865-q+1,10,10);
+    rho_t_ps = zeros(865-q+1,10,10);
+    spear_t_ps = zeros(865-q+1,10,10);
+    tau_t_ps = zeros(865-q+1,10,10);
+    for i = 1:(865-q+1)
+        data_temp = returns_all(i:i+q-1,:); %is this right length?
         [rhos_temp(i,:,:),rho_t_ps(i,:,:)] = corr(data_temp);
-        %[spears_temp(i,:,:),spear_t_ps(i,:,:)] = corr(data_temp,'type','Spearman');
-        %[taus_temp(i,:,:),tau_t_ps(i,:,:)] = corr(data_temp,'type','Kendall');
+        [spears_temp(i,:,:),spear_t_ps(i,:,:)] = corr(data_temp,'type','Spearman');
+        [taus_temp(i,:,:),tau_t_ps(i,:,:)] = corr(data_temp,'type','Kendall');
     end
-    rhos(q,:,:) = mean(rhos_temp); % make sure the mean is running along right axes
-    rho_ps(q,:,:) = mean(rhos_t_ps);
+    [nan_index,~,~] = find(isnan(rhos_temp));
+    rhos_temp(unique(nan_index),:,:) = [];
+    spears_temp(unique(nan_index),:,:) = [];
+    taus_temp(unique(nan_index),:,:) = [];
+    
+    rho_t_ps(unique(nan_index),:,:) = [];
+    spear_t_ps(unique(nan_index),:,:) = [];
+    tau_t_ps(unique(nan_index),:,:) = [];
+    
+    if q < 865
+        rhos(q-ss1,:,:) = mean(rhos_temp);
+        spears(q-ss1,:,:) = mean(spears_temp);
+        taus(q-ss1,:,:) = mean(taus_temp);
+        rho_ps(q-ss1,:,:) = mean(rho_t_ps);
+        spear_ps(q-ss1,:,:) = mean(spear_t_ps);
+        tau_ps(q-ss1,:,:) = mean(tau_t_ps);
+    else
+        rhos(q-ss1,:,:) = rhos_temp;
+        spears(q-ss1,:,:) = spears_temp;
+        taus(q-ss1,:,:) = taus_temp;
+        rho_ps(q-ss1,:,:) = rho_t_ps;
+        spear_ps(q-ss1,:,:) = spear_t_ps;
+        tau_ps(q-ss1,:,:) = tau_t_ps;
+    end
+    
+    fprintf('%i \n', q)
 end
 
+correlation_data = [rhos;spears;taus];
+correlation_ps = [rho_ps;spear_ps;tau_ps];
 
 for i = 1:9
     for j = i+1:10
         figure(i*10+j)
         hold on
-        plot(1:q,rhos(:,i,j)) % is this right way to index?
-        % plot spearmans
-        % plot taus
+        plot(start_size:max_wsize,rhos(:,i,j))
+        plot(start_size:max_wsize,spears(:,i,j))
+        plot(start_size:max_wsize,taus(:,i,j))
         xlabel('window size')
         ylabel('correlation')
         title('Comparison of correlation parameters for different rolling windows')
-        %legend({'Pearson rho','Spearman rho','Kendall tau'},'Location','NorthWest')
+        legend({'Pearson rho','Spearman rho','Kendall tau'},'Location','NorthWest')
         
         figure(1000+i*10+j)
-        plot(1:q,rho_ps(:,i,j))
-        % plot spearmans
-        % plot taus
+        hold on
+        plot(start_size:max_wsize,rho_ps(:,i,j))
+        plot(start_size:max_wsize,spear_ps(:,i,j))
+        plot(start_size:max_wsize,tau_ps(:,i,j))
+        plot(start_size:max_wsize,ones(size(start_size:max_wsize))*0.05,'r--')
         xlabel('window size')
         ylabel('correlation p-values')
         title('Comparison of correlation significances for different rolling windows')
-        %legend({'Pearson rho','Spearman rho','Kendall tau'},'Location','NorthWest')
+        legend({'Pearson rho','Spearman rho','Kendall tau','5% significance'},'Location','NorthWest')
     end
 end
 
@@ -224,8 +254,8 @@ cond_ent = conditional_entropy(returns_all(:,5),returns_all(:,1),returns_all(:,5
 % http://users.sussex.ac.uk/~lionelb/MVGC/html/mvgchelp.html
 
 % Force huge lag (even with errors, to find true best x_lag & ylag) 
-[linear_cond_ent,x_lag,y_lag] = granger_cause(returns_all(:,1),returns_all(:,3),432); % should work up to 432? X
-[square_cond_ent,x_lsq,y_lsq] = granger_squared(returns_all(:,1),returns_all(:,3),216); % should work up to 216
+%[linear_cond_ent,x_lag,y_lag] = granger_cause(returns_all(:,1),returns_all(:,3),432); % should work up to 432? X
+%[square_cond_ent,x_lsq,y_lsq] = granger_squared(returns_all(:,1),returns_all(:,3),216); % should work up to 216
 % Compare to
 total_cond_ent = conditional_entropy(returns_all(:,1),returns_all(:,3),returns_all(:,1));
 % Maybe do set of overlapped bar graphs comparing how much of each vector's
@@ -233,48 +263,58 @@ total_cond_ent = conditional_entropy(returns_all(:,1),returns_all(:,3),returns_a
 
 % Look @ changing best lags and true info based on granger causality funcs
 max = 400;
-lins = zeros(1,max);
-l_xs = zeros(1,max);
-l_ys = zeros(1,max);
 
-squares = zeros(1,max);
-s_xs = zeros(1,max);
-s_ys = zeros(1,max);
+%lins = zeros(1,max);
+%l_xs = zeros(1,max);
+%l_ys = zeros(1,max);
 
-for i = 1:max
-    [lins(i),l_xs(i),l_ys(i)] = granger_cause(returns_all(:,1),returns_all(:,3),i);
-    [squares(i),s_xs(i),s_ys(i)] = granger_squared(returns_all(:,1),returns_all(:,3),i); 
-    fprintf('%i \n', i)
-end
+%squares = zeros(1,max);
+%s_xs = zeros(1,max);
+%s_ys = zeros(1,max);
+
+%for i = 1:max
+%    [lins(i),l_xs(i),l_ys(i)] = granger_cause(returns_all(:,1),returns_all(:,3),i);
+%    [squares(i),s_xs(i),s_ys(i)] = granger_squared(returns_all(:,1),returns_all(:,3),i); 
+%    fprintf('%i \n', i)
+%end
 
 ax = 1:max;
+
+load('linear_data.mat')
+load('squared_data.mat')
+l_xs = linear_data(:,1)';
+l_ys = linear_data(:,2)';
+lins = linear_data(:,3)';
+s_xs = squared_data(:,1)';
+s_ys = squared_data(:,2)';
+squares = squared_data(:,3)';
 
 linear_data = [l_xs',l_ys',lins'];
 squared_data = [s_xs',s_ys',squares'];
 
 figure()
 plot(ax,l_xs,'r',ax,l_ys,'g')
-xlabel('maximum allowed lag boundary')
-ylabel('optimal lag boundary computed')
+xlabel('maximum allowed lag boundary (days)')
+ylabel('optimal lag boundary computed (days)')
 title('Plot of optimal model lag boundaries for prediction via linear methods')
 legend({'original data set','additional data set'},'Location','NorthWest')
 figure()
 plot(ax,lins)
-xlabel('maximum allowed lag boundary')
-ylabel('linear transfer entropy')
+xlabel('maximum allowed lag boundary (days)')
+ylabel('linear transfer entropy (bits)')
 title('Plot of linear transfer entropy between sets vs. maximum lag boundary')
 legend({'transfer entropy calculated using computed optimal lags'},'Location','NorthWest')
 
 figure()
 plot(ax,s_xs,'r',ax,s_ys,'g')
-xlabel('maximum allowed lag boundary')
-ylabel('optimal lag boundary computed')
+xlabel('maximum allowed lag boundary (days)')
+ylabel('optimal lag boundary computed (days)')
 title('Plot of optimal model lag boundaries for prediction via quadratic methods')
 legend({'original data set','additional data set'},'Location','NorthWest')
 figure()
 plot(ax,squares)
-xlabel('maximum allowed lag boundary')
-ylabel('squared-fit transfer entropy')
+xlabel('maximum allowed lag boundary (days)')
+ylabel('squared-fit transfer entropy (bits)')
 title('Plot of squared-fit transfer entropy between sets vs. maximum lag boundary')
 legend({'transfer entropy calculated using computed optimal lags'},'Location','NorthWest')
 
@@ -286,7 +326,45 @@ legend({'transfer entropy calculated using computed optimal lags'},'Location','N
 
 % Granger causuality between lagged sets = conditional entropy for linearly related sets 
 
-% Attempt granger quantification of squared dependence
+%% Non-linear plots
+
+conditionals = zeros(10,10);
+granger_lins = zeros(10,10);
+granger_sqs = zeros(10,10);
+for i = 1:9
+    for j = i+1:10
+        [granger_lins(i,j),xlag,ylag] = granger_cause(returns_all(:,i),returns_all(:,j),400);
+        %granger_sqs(i,j) = granger_squared(returns_all(:,i),returns_all(:,j),400);
+        % use x & y from lins, but say found optimal by trying all
+        lag = max(xlag,ylag); % say used both not just bigger one
+        conditionals_temp = zeros(1,865-lag+1);
+        for q = 1:(865-2*lag+1)
+            data_temp = returns_all(q:q+lag-1,:);
+            data_temp2 = returns_all((q+lag):(q+2*lag-1),:);
+            conditionals_temp(q) = conditional_entropy2(data_temp2(:,i),data_temp(:,j),data_temp(:,i));
+        end
+        conditionals(i,j) = conditional_entropy2(returns_all(:,i),returns_all(:,j),returns_all(:,i));
+    end
+    fprintf('%i \n', i)
+end
+% if conditionals come out too small just beef them, they are right
+% proportions
+
+conditionals = reshape(conditionals',1,[]);
+conditionals(conditionals == 0) = [];
+granger_lins = reshape(granger_lins',1,[]);
+granger_lins(granger_lins == 0) = [];
+granger_sqs = reshape(granger_sqs',1,[]);
+granger_sqs(granger_sqs == 0) = [];
+% These labels are wrong (& not acting as labels), should be +1, but with
+% 9s -> 10s showing right thing
+entropy_xs = [11:19,22:29,33:39,44:49,55:59,66:69,77:79,88:89,99];
+
+figure()
+hold on
+bar(entropy_xs,conditionals)
+bar(entropy_xs,granger_lins)
+bar(entropy_xs,granger_sqs)
 
 % Make his weird folded-paper looking plot?
 % Make his scales plot for part 1?

@@ -12,6 +12,7 @@ data_new = round(rescaler*(data-min(steps)));
 % Count the number of (x,y,z) values in each possible state
 % This is a 2D map of joint probability counts
 joint_density = accumarray(data_new+1,1);
+joint_density(joint_density == 0) = 0.000000001;
 
 new_step = 1/rescaler;
 %new_steps = min(steps):new_step:max(steps);

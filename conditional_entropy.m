@@ -79,13 +79,13 @@ Hyz = -sum(sum(joint_density*dx*dy.*log(joint_density*dx*dy)));
 
 % Find triple here & input :) (remember normalizing)
 [ds,joint_density] = joint_prob_trip([predict,sample,given]);
-joint_density(joint_density == 0) = 0.000000001;
 joint_density = joint_density/sum(sum(sum(joint_density*ds*ds*ds)));
 Hxyz = -sum(sum(sum(joint_density*ds*ds*ds.*log(joint_density*ds*ds*ds))));
 % re-normalize so get's same output as other version
 Hxyz = Hxyz * 1.0149;
 
-info = mutual_info(predict,sample) + Hxy + Hxz + Hyz - Hx - Hy - Hz - Hxyz;
+%info = mutual_info(predict,sample) + Hxy + Hxz + Hyz - Hx - Hy - Hz - Hxyz;
+info =  Hxz + Hyz - Hz - Hxyz;
 
 end
 
