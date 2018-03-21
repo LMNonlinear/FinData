@@ -55,9 +55,9 @@ plot(dates,pred_CVaRs_95)
 plot(dates,zeros(size(scales)),'r--')
 datetick('x',12)
 xlim([min(dates),max(dates)])
-title('Predicted returns and potential losses (at 95% confidence) as a function of date')
-xlabel('date')
-ylabel('returns')
+title('Predicted returns and potential losses (at 95% confidence) as a function of date','fontsize',14)
+xlabel('date','fontsize',14)
+ylabel('returns','fontsize',14)
 legend({'actual returns','estimates of cumulative historical VaR',...
     'estimates of cumulative historical ES','predicted returns',...
     'predicted value at risk','predicted expected shortfall'},...

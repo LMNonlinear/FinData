@@ -30,12 +30,12 @@ figure()
 hold on
 plot(scales,act_deltas)
 plot(scales,b_delt(1)+b_delt(2)*scales)
-plot(scales,emp_dist1.delta*scales.^(1/emp_dist1.alpha))
-title('Comparing different models for the delta of a scaled returns pdf')
-xlabel('log(scaling size (in days))')
-ylabel('log(computed delta)')
-legend({'empirical deltas','linear fit of deltas','theoretical deltas'},...
-    'location','NorthWest')
+plot(scales,emp_dist1.delta*scales.^(1/(emp_dist1.alpha)))
+title('Comparing different models for the delta of a scaled returns pdf','fontsize',14)
+xlabel('scaling size (in days)','fontsize',14)
+ylabel('computed delta','fontsize',14)
+legend({'empirical deltas','linear fit of deltas','theoretical deltas for random walk'},...
+    'location','NorthWest','fontsize',12)
 
 % Lagrangian minimization for alpha tuning param (gam)
 lagrangian = @(x) immse(log(scales)./(log(act_gams/emp_dist1.gam)), ...
@@ -51,13 +51,13 @@ figure()
 hold on
 plot(llag,lgam)
 plot(llag,b_gam(1)+b_gam(2)*llag)
-plot(llag,log(emp_dist1.gam)+(1/emp_dist1.alpha)*llag);
+plot(llag,log(emp_dist1.gam)+(1/(emp_dist1.alpha))*llag);
 plot(llag,log(emp_dist1.gam)+llag./(emp_dist1.alpha*(1+param*scales)));
-title('Comparing different models for the gamma of a scaled returns pdf')
-xlabel('log(scaling size (in days))')
-ylabel('log(computed gamma)')
-legend({'empirical gammas','log-linear fit of gammas','theoretical gammas',...
-    'variable alpha model'},'location','NorthWest')
+title('Comparing different models for the gamma of a scaled returns pdf','fontsize',14)
+xlabel('log(scaling size (in days))','fontsize',14)
+ylabel('log(computed gamma)','fontsize',14)
+legend({'empirical gammas','log-linear fit of gammas','theoretical gammas for random walk',...
+    'variable alpha model'},'location','NorthWest','fontsize',12)
 %This actually concludes throwing out theory altogether, but our best fit
 %parameters aren't alphas at all, would be alphas if weren't allowed free
 %intercept... check how

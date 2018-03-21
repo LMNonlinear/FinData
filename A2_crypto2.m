@@ -109,7 +109,7 @@ returns_all = [returns_bit,returns_eth,returns_rip,returns_nem,...
 %% Plot all correlation measures vs. window size
 
 max_wsize = 865;
-start_size = 5;
+start_size = 10; %9 is a problem child
 ss1 = start_size - 1;
 
 rhos = zeros(max_wsize-ss1,10,10);
@@ -162,32 +162,35 @@ end
 
 correlation_data = [rhos;spears;taus];
 correlation_ps = [rho_ps;spear_ps;tau_ps];
+c5020.correlation_data(1:151,:,:);
 
 for i = 1:9
     for j = i+1:10
+        %{
         figure(i*10+j)
         hold on
         plot(start_size:max_wsize,rhos(:,i,j))
         plot(start_size:max_wsize,spears(:,i,j))
         plot(start_size:max_wsize,taus(:,i,j))
-        xlabel('window size')
-        ylabel('correlation')
+        xlabel('window size (days)')
+        ylabel('average correlation')
         title('Comparison of correlation parameters for different rolling windows')
         legend({'Pearson rho','Spearman rho','Kendall tau'},'Location','NorthWest')
-        
+        %}
         figure(1000+i*10+j)
         hold on
         plot(start_size:max_wsize,rho_ps(:,i,j))
         plot(start_size:max_wsize,spear_ps(:,i,j))
         plot(start_size:max_wsize,tau_ps(:,i,j))
         plot(start_size:max_wsize,ones(size(start_size:max_wsize))*0.05,'r--')
-        xlabel('window size')
-        ylabel('correlation p-values')
+        xlabel('window size (days)')
+        ylabel('average correlation p-values')
         title('Comparison of correlation significances for different rolling windows')
-        legend({'Pearson rho','Spearman rho','Kendall tau','5% significance'},'Location','NorthWest')
+        legend({'Pearson rho','Spearman rho','Kendall tau','5% significance'},'Location','NorthEast')
     end
 end
 
+% general trend due to market autocorrelation
 
 %% Visual check for dependencies
 
@@ -278,6 +281,9 @@ max = 400;
 %    fprintf('%i \n', i)
 %end
 
+% talk about market weeding out causality, look at reversing sets and see
+% what results say
+
 ax = 1:max;
 
 load('linear_data.mat')
@@ -331,10 +337,12 @@ legend({'transfer entropy calculated using computed optimal lags'},'Location','N
 conditionals = zeros(10,10);
 granger_lins = zeros(10,10);
 granger_sqs = zeros(10,10);
-for i = 1:9
-    for j = i+1:10
+granger_cubes = zeros(10,10);
+for i = 1:10 %1:9
+    for j = 1:10 %i+1:10
         [granger_lins(i,j),xlag,ylag] = granger_cause(returns_all(:,i),returns_all(:,j),400);
         %granger_sqs(i,j) = granger_squared(returns_all(:,i),returns_all(:,j),400);
+        %granger_cubes(i,j) = granger_cubed(returns_all(:,i),returns_all(:,j),400);
         % use x & y from lins, but say found optimal by trying all
         lag = max(xlag,ylag); % say used both not just bigger one
         conditionals_temp = zeros(1,865-lag+1);
@@ -356,16 +364,19 @@ granger_lins = reshape(granger_lins',1,[]);
 granger_lins(granger_lins == 0) = [];
 granger_sqs = reshape(granger_sqs',1,[]);
 granger_sqs(granger_sqs == 0) = [];
+granger_cubes = reshape(granger_cubes',1,[]);
+granger_cubes(granger_cubes == 0) = [];
 % These labels are wrong (& not acting as labels), should be +1, but with
 % 9s -> 10s showing right thing
-entropy_xs = [11:19,22:29,33:39,44:49,55:59,66:69,77:79,88:89,99];
+%entropy_xs = [11:19,22:29,33:39,44:49,55:59,66:69,77:79,88:89,99];
+entropy_xs = 1:100;
 
 figure()
 hold on
 bar(entropy_xs,conditionals)
 bar(entropy_xs,granger_lins)
 bar(entropy_xs,granger_sqs)
-
+bar(entropy_xs,granger_cubes)
 % Make his weird folded-paper looking plot?
 % Make his scales plot for part 1?
 % MFE_Toolbox\multivariate 

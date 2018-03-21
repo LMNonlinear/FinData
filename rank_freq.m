@@ -38,7 +38,7 @@ cdf_pos = cumsum(pdf_pos)*(max(data_set))/10000;
 cdf_neg = cumsum(pdf_neg)*(-min(data_set))/10000;
 loglog(x_pos,1-cdf_pos,'-m','linewidth',2)
 loglog(-flip(x_neg),1-cdf_neg,'-c','linewidth',2)
-axis([1e-5 1 6e-3 1])
+axis([1e-5 1 1e-4 1]) %6e-3
 s = ' ';
 if min(data_set) < 0
 legend({['positive',s,set_name],['negative',s,set_name],[distribution,...

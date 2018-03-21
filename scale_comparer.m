@@ -21,7 +21,7 @@ if string(dist_type) == "Stable"
     scaled_pd.delta = params_delt(1)+scale*params_delt(2);
     
     % Theoretical and un-used distribution scaling methods
-    multiplier = (scale)^(1/emp_dist1.alpha);
+    multiplier = (scale)^(1/(emp_dist1.alpha));
     theory_pd = emp_dist1;
     theory_pd.gam = theory_pd.gam*multiplier;
     theory_pd.delta = scale*mean(daily_returns) - theory_pd.beta * theory_pd.gam ...
@@ -49,9 +49,9 @@ plot(x,pdf(emp_dist2,x),'r')
 plot(x,pdf(scaled_pd,x),'b')
 plot(x,pdf(theory_pd,x),'g')
 %xlim([min(x),max(x)])
-title('Comparison of models for scaled returns pdf to empirically determined pdf')
-xlabel('returns')
-ylabel('probability density')
+title('Comparison of models for scaled returns pdf to empirically determined pdf','fontsize',14)
+xlabel('returns','fontsize',14)
+ylabel('probability density','fontsize',14)
 if string(dist_type) == "Stable"
     legend({'empirical scaled pdf','pdf based on fitted behaviour',...
         'theoretical scaled pdf'},'location','NorthEast')

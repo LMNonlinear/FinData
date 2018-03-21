@@ -23,6 +23,7 @@ plot(x, means)
 plot(x, sigmas)
 plot(x, skews)
 plot(x, kurts)
+v1 = vline2(1055,'r','01/01/2017');
 xlim([min(x),max(x)])
 legend({'mean','standard deviation','skewness','kurtosis'},...
     'location','East')

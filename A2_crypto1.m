@@ -230,7 +230,7 @@ r_ppdf_obj = fitdist(returns_lim,'Stable');
 % second entry (q) is the moment number, i.e. 1=mean, 2=var, etc.
 % maxT is maximum scaling window size used: we're going for 100
 q = 0:0.05:4;
-[mean_hursts,std_hursts]=genhurst(returns_full,q,100); 
+[mean_hursts,std_hursts]=genhurst(closep.full,q,100); 
 % a process is self-affine if it scales into the same distrib w/ diff
 % parameters
 % a process is uni-scaling if H does not depend on q
@@ -242,34 +242,61 @@ q = 0:0.05:4;
 % correlation, which would give a uniform power spectral density =
 % definition of white noise!!
 
-compare_plot = zeros(size(q));
+compare_brownian = 0.5*ones(size(q));
+
+% Levy process w/ alpha between 1&2
+compare_levy12 = zeros(size(q));
 for i = 1:length(q)
-    if q(i) >= r_ppdf_obj.alpha+1
-        compare_plot(i) = q(i).^(-1);
+    if q(i) >= r_ppdf_obj.alpha
+        compare_levy12(i) = q(i).^(-1);
     else
-        compare_plot(i) = 1/(r_ppdf_obj.alpha+1);
+        compare_levy12(i) = 1/(r_ppdf_obj.alpha);
     end
 end
 
-compare_plot = zeros(size(q));
+compare_levy23 = zeros(size(q));
 for i = 1:length(q)
-    if q(i) >= r_ppdf_obj.alpha
-        compare_plot(i) = r_ppdf_obj.alpha/(2*q(i));
+    if q(i) >= (r_ppdf_obj.alpha+1)
+        compare_levy23(i) = (r_ppdf_obj.alpha+1)/(2*q(i));
     else
-        compare_plot(i) = 0.5;
+        compare_levy23(i) = 0.5;
+    end
+end
+
+compare_levy1 = zeros(size(q));
+for i = 1:length(q)
+    if q(i) >= 1
+        compare_levy1(i) = 1/q(i);
+    else
+        compare_levy1(i) = 1;
+    end
+end
+
+d=0.5;
+compare_levyAR = zeros(size(q));
+for i = 1:length(q)
+    if q(i) >= (r_ppdf_obj.alpha+1)
+        compare_levyAR(i) = (d+1)/q(i);
+    else
+        compare_levyAR(i) = (d+1)/(r_ppdf_obj.alpha+1);
     end
 end
 
 figure()
 hold on
-plot(q,q.*mean_hursts','r')
-plot(q,q.*mean_hursts' + q.*std_hursts'./2,'b',q,q.*mean_hursts'-q.*std_hursts'./2,'b')
-%plot(q,compare_plot)
-title('Multi-scaling scaling function vs. degree of distribution moment')
-xlabel('degree of distribution moment (q)')
-ylabel('q * H(q)')
-legend({'generalized Hurst exponent','error margins on calculated exponent'},...
-    'location','NorthWest')
+h1 = plot(q,q.*mean_hursts','r');
+h2 = plot(q,q.*mean_hursts' + q.*std_hursts'./2,'b');
+plot(q,q.*mean_hursts'-q.*std_hursts'./2,'b')
+h3 = plot(q,q.*compare_brownian,'-');
+%plot(q,q.*compare_levy12)
+h4 = plot(q,q.*compare_levy23,'--');
+%plot(q,q.*compare_levyAR)
+%plot(q,q.*compare_levy1)
+title('Scaling function vs. degree of distribution moment','fontsize',14)
+xlabel('degree of distribution moment (q)','fontsize',14)
+ylabel('q * H(q)','fontsize',14)
+legend([h1,h2,h3,h4],{'generalized Hurst exponent','error margins on calculated exponent','Hurst exponent for random walk','Hurst exponent for Levy Process'},...
+    'location','NorthWest','fontsize',11)
 % fix labels to represent multiplication by q
 
 % The value of H(q) give indication about the fractal nature of the signal.
@@ -356,10 +383,10 @@ figure()
 hold on
 plot(returns_x,smooth_epdf)
 plot(returns_x,r_ppdf)
-legend({'empirical pdf','fitted Stable pdf'},'location','NorthEast')
-title('Comparison of empirically and parametrically determined pdfs')
-xlabel('returns')
-ylabel('probability density')
+legend({'empirical pdf','fitted Stable pdf'},'location','NorthEast','fontsize',12)
+title('Comparison of empirically and parametrically determined pdfs','fontsize',14)
+xlabel('returns','fontsize',14)
+ylabel('probability density','fontsize',14)
 
 %Reset r_ppdf to non-fake properties
 r_ppdf_obj = fitdist(returns_lim,'Stable');

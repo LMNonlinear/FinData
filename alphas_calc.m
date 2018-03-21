@@ -20,9 +20,9 @@ end
 figure()
 x = 3:length(data_set);
 plot(x,-params(2,:))
-title('Power law decay constant vs. number of values used to compute')
-xlabel('number of data points used (from most extreme)')
-ylabel('alpha')
+title('Power law decay constant vs. number of values used to compute','fontsize',14)
+xlabel('number of data points used (from most extreme)','fontsize',14)
+ylabel('alpha','fontsize',14)
 set(gca,'Xdir','reverse')
 
 %figure()
